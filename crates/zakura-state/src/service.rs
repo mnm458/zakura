@@ -3263,6 +3263,54 @@ impl Service<ReadRequest> for ReadStateService {
                 Ok(ReadResponse::RawBlocks(blocks))
             }
 
+            ReadRequest::AnyChainSaplingTree(hash) => {
+                let tree = match read::any_sapling_tree(
+                    state.latest_non_finalized_state().chain_iter(),
+                    &state.db,
+                    hash,
+                ) {
+                    Ok(tree) => tree,
+                    Err(unavailable) => Some(
+                        historical_frontiers(&state, hash.into(), unavailable)?
+                            .sapling
+                            .clone(),
+                    ),
+                };
+                Ok(ReadResponse::SaplingTree(tree))
+            }
+
+            ReadRequest::AnyChainOrchardTree(hash) => {
+                let tree = match read::any_orchard_tree(
+                    state.latest_non_finalized_state().chain_iter(),
+                    &state.db,
+                    hash,
+                ) {
+                    Ok(tree) => tree,
+                    Err(unavailable) => Some(
+                        historical_frontiers(&state, hash.into(), unavailable)?
+                            .orchard
+                            .clone(),
+                    ),
+                };
+                Ok(ReadResponse::OrchardTree(tree))
+            }
+
+            ReadRequest::AnyChainIronwoodTree(hash) => {
+                let tree = match read::any_ironwood_tree(
+                    state.latest_non_finalized_state().chain_iter(),
+                    &state.db,
+                    hash,
+                ) {
+                    Ok(tree) => tree,
+                    Err(unavailable) => Some(
+                        historical_frontiers(&state, hash.into(), unavailable)?
+                            .ironwood
+                            .clone(),
+                    ),
+                };
+                Ok(ReadResponse::IronwoodTree(tree))
+            }
+
             ReadRequest::SaplingTree(hash_or_height) => {
                 let tree = match read::sapling_tree(
                     state.latest_best_chain(),

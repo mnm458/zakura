@@ -705,3 +705,45 @@ where
             }
         })
 }
+
+/// Returns the Sapling tree for a block in any retained chain or finalized state.
+/// Historical availability checks are identical to [`sapling_tree`].
+pub fn any_sapling_tree<'a, C: AsRef<Chain> + 'a>(
+    mut chains: impl Iterator<Item = &'a C>,
+    db: &ZakuraDb,
+    hash: block::Hash,
+) -> Result<Option<Arc<sapling::tree::NoteCommitmentTree>>, HistoricalTreeUnavailable> {
+    let tree = chains
+        .find_map(|chain| chain.as_ref().sapling_tree(hash.into()))
+        .or_else(|| db.sapling_tree_by_hash_or_height(hash.into()));
+
+    resolve_historical_tree(db, hash.into(), NetworkUpgrade::Sapling, tree)
+}
+
+/// Returns the Orchard tree for a block in any retained chain or finalized state.
+/// Historical availability checks are identical to [`orchard_tree`].
+pub fn any_orchard_tree<'a, C: AsRef<Chain> + 'a>(
+    mut chains: impl Iterator<Item = &'a C>,
+    db: &ZakuraDb,
+    hash: block::Hash,
+) -> Result<Option<Arc<orchard::tree::NoteCommitmentTree>>, HistoricalTreeUnavailable> {
+    let tree = chains
+        .find_map(|chain| chain.as_ref().orchard_tree(hash.into()))
+        .or_else(|| db.orchard_tree_by_hash_or_height(hash.into()));
+
+    resolve_historical_tree(db, hash.into(), NetworkUpgrade::Nu5, tree)
+}
+
+/// Returns the Ironwood tree for a block in any retained chain or finalized state.
+/// Historical availability checks are identical to [`ironwood_tree`].
+pub fn any_ironwood_tree<'a, C: AsRef<Chain> + 'a>(
+    mut chains: impl Iterator<Item = &'a C>,
+    db: &ZakuraDb,
+    hash: block::Hash,
+) -> Result<Option<Arc<ironwood::tree::NoteCommitmentTree>>, HistoricalTreeUnavailable> {
+    let tree = chains
+        .find_map(|chain| chain.as_ref().ironwood_tree(hash.into()))
+        .or_else(|| db.ironwood_tree_by_hash_or_height(hash.into()));
+
+    resolve_historical_tree(db, hash.into(), NetworkUpgrade::Nu6_3, tree)
+}
